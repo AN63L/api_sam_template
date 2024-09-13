@@ -1,0 +1,51 @@
+host: <domain name of host> #TO EDIT
+info:
+  title: "<api name>" #TO EDIT . It is overwritten by the template.
+  description: "API description" #TO EDIT . It is overwritten by the template.
+  version: "1.0.0"
+schemes:
+  - https
+swagger: "2.0"
+x-amazon-apigateway-endpoint-configuration:
+  disableExecuteApiEndpoint: true #REQUIRED - This will ensure that your custom domain is users 
+paths:
+  /Users/{Username}:
+    put:
+      parameters:
+        - name: "Username"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: "200 response"
+          content: {}
+        "400":
+          content: {}
+          description: "Invalid parameters inside body or invalid path parameters."
+        "401":
+          content: {}
+          description: "Invalid UMA user and/or id token. Cheeky you, are you trying to access another user's data ?"
+        "403":
+          content: {}
+          description: "Invalid credentials. Are you using the right authentication method ?"
+        "408":
+          content: {}
+          description: "Request timed out. Please try again or contact support."
+        "429":
+          content: {}
+          description: "Request limit exceeded, please try again later. "
+        "500":
+          content: {}
+          description: "Lambda execution error. Please contact support."
+      x-amazon-apigateway-integration:
+        type: "aws_proxy"
+        uri: "arn:aws:apigateway:<region>:lambda:path/2015-03-31/functions/arn:aws:lambda:<region>:<account-id>:function:<function-name>/invocations"
+        credentials: "arn:aws:iam::<account-id>:role/<role-name>"
+        httpMethod: "POST"
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        contentHandling: "CONVERT_TO_TEXT"

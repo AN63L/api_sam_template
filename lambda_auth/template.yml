@@ -1,0 +1,47 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: Description of your API #TO EDIT
+Resources:
+  APIName: #TO EDIT
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: ApiName #TO EDIT
+      Description: API description # TO EDIT
+      StageName: develop #TO EDIT - Depending on your requirements, I suggest you use environment names to separate stages. 
+      OpenApiVersion: 3.0.1
+      CacheClusterEnabled: false
+      EndpointConfiguration: EDGE 
+      TracingEnabled: false
+      MethodSettings: #OPTIONAL, TO EDIT
+        - LoggingLevel: INFO
+          ResourcePath: "/*" # allows for logging on any resource
+          HttpMethod: "*" # allows for logging on any method
+      Domain:
+        BasePath: /
+        CertificateArn: arn:aws:acm:us-east-1:<account-id>:certificate/<certificate-id> #TO EDIT
+        DomainName: custom.domain.com #TO EDIT
+        EndpointConfiguration: EDGE
+        Route53:
+          HostedZoneId: <Zone ID> #TO EDIT
+      DefinitionBody:
+        "Fn::Transform":
+          Name: "AWS::Include"
+          Parameters:
+            Location: "./src/api.yml"
+      Cors:
+        AllowMethods: "'GET, POST, PUT, PATCH, DELETE, OPTIONS'"
+        AllowOrigin: "'*'"
+        AllowHeaders: "'Content-type'" #TO EDIT, if you have specific headers
+      Auth:
+        AddDefaultAuthorizerToCorsPreflight: false
+        ApiKeyRequired: false
+        DefaultAuthorizer: NameOfAuthorizer #TO EDIT
+        Authorizers:
+          NameOfAuthorizer: #TO EDIT
+            FunctionPayloadType: TOKEN
+            FunctionArn: "arn:aws:lambda:<region>:<account-id>:function:<function-name>" #TO EDIT
+            FunctionInvokeRole: "arn:aws:iam::<account-id>:role/<role-name>" #TO EDIT
+            Identity:
+              Headers:
+              - Authorization
+              ReauthorizeEvery: 1
